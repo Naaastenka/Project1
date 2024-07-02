@@ -1,0 +1,889 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Naaastenka/Project1/blob/main/Hometask/data.pkl\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4vel/python-intro/blob/main/HomeTask/Task1_dmrf.ipynb)"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "pycharm": {
+          "name": "#%% md\n"
+        },
+        "id": "Db0wv8l8eVXV"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Задание\n",
+        "* Собрать информацию о всех строящихся объектах на сайте \"наш.дом.рф\"\n",
+        "* Cохранить ее в pandas dataframe\n",
+        "* Cохранить pandas dataframe в pickle\n",
+        "* Cохранить pandas dataframe в excel\n",
+        "* Cохранить pandas dataframe в БД\n",
+        "\n",
+        "\n",
+        "# Поправка\n",
+        "* В случае если не удается/ не получается / не хочется скачать информацию о всех строящихся объектах на сайте \"наш.дом.рф\", пропустите первые 3 пункта задания. Используйте готовый файл в формате pickle (df_nashfomrf.pkl) и переходите к следующим пунктам\n",
+        "\n",
+        "* Если не получается скачать данные с помощью библиотеки requests, но есть желание собрать данные с помощью python, то можно воспользоваться библиотекой selenium, которая извлекает информацию из веб-страниц в браузере."
+      ],
+      "metadata": {
+        "collapsed": false,
+        "pycharm": {
+          "name": "#%% md\n"
+        },
+        "id": "Y3Tyd80geVXY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [],
+      "source": [
+        "import requests"
+      ],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "ExecuteTime": {
+          "end_time": "2023-12-07T13:23:41.474486Z",
+          "start_time": "2023-12-07T13:23:41.465949Z"
+        },
+        "id": "XBG_t8vceVXZ"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Шаг 1й - Получение списка объектов"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "pycharm": {
+          "name": "#%% md\n"
+        },
+        "id": "IuKU_dFieVXb"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [
+        {
+          "data": {
+            "text/plain": "{'hobjId': 34754,\n 'objId': 13399,\n 'developer': {'devId': 306,\n  'shortName': '2МЕН ГРУПП',\n  'fullName': '2МЕН ГРУПП',\n  'groupName': '2МЕН ГРУПП ДЕВЕЛОПМЕНТ',\n  'orgForm': {'id': 1, 'fullForm': 'Акционерное общество', 'shortForm': 'АО'},\n  'companyGroup': 5776,\n  'devInn': '7701651356'},\n 'rpdRegionCd': 72,\n 'objAddr': 'г Тюмень, ул Профсоюзная, д. 56',\n 'objFloorMin': 1,\n 'objFloorMax': 1,\n 'objElemLivingCnt': 0,\n 'objReady100PercDt': '2024-12-31',\n 'objSquareLiving': 0.0,\n 'objCompensFundFlg': 0,\n 'objProblemFlg': 0,\n 'latitude': 57.1519,\n 'longitude': 65.5544,\n 'problemFlag': 'NONE',\n 'siteStatus': 'Строящиеся',\n 'objGuarantyEscrowFlg': 0,\n 'residentialBuildings': 0,\n 'rpdNum': '72-000097',\n 'pdId': 28141,\n 'buildType': 'Нежилое',\n 'objStatus': 0,\n 'hobjRenderPhotoUrl': 'https://xn--80az8a.xn--d1aqf.xn--p1ai/api/ext/file/6C6B7A3A589C136AAB8F47F5BDCC02C31E7D0A1E',\n 'objPriceAVG': 50768,\n 'objPublDt': '2019-05-31'}"
+          },
+          "execution_count": 3,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "# Для скачивания данных\n",
+        "\n",
+        "offset_ = 1 # размер шага\n",
+        "limit_ = 100 # количество объектов в одном ответе api\n",
+        "url = f'https://xn--80az8a.xn--d1aqf.xn--p1ai/%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D1%8B/api/kn/object?offset={offset_}&limit={limit_}&sortField=devId.devShortCleanNm&sortType=asc&objStatus=0'\n",
+        "res = requests.get(url)\n",
+        "objects_data = res.json()\n",
+        "objects_data.get('data').get('list')[0]"
+      ],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "ExecuteTime": {
+          "end_time": "2023-12-07T13:23:43.646382Z",
+          "start_time": "2023-12-07T13:23:42.721748Z"
+        },
+        "id": "oRtNN1TueVXc",
+        "outputId": "7c54a383-140e-4303-c91e-a062e829abfd"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [],
+      "source": [
+        "objects_list = objects_data.get('data').get('list')\n",
+        "objids = [x.get('objId') for x in objects_list]\n",
+        "objids[:10]"
+      ],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "id": "RAvI8dImeVXd"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Данные по определенному объекту"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "pycharm": {
+          "name": "#%% md\n"
+        },
+        "id": "qFmZYtnVeVXe"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [],
+      "source": [
+        "# Для скачивания данных по определенному объекту, нужно добавить его id в конец строки запроса\n",
+        "url = f'https://xn--80az8a.xn--d1aqf.xn--p1ai/%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D1%8B/api/object/29679'"
+      ],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "id": "VBs9IjvqeVXe"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [
+        {
+          "data": {
+            "text/plain": "{'data': {'id': 29679,\n  'pdId': 124647,\n  'developer': {'devId': 7424,\n   'devShortCleanNm': '212-2',\n   'devShortNm': '212-2',\n   'devFullCleanNm': '212-2',\n   'problObjCnt': 0,\n   'buildObjCnt': 2,\n   'comissObjCnt': 0,\n   'regRegionDesc': 'Ростовская область',\n   'devPhoneNum': '+7(961)285-90-10',\n   'devSite': 'taganrogjsk.wixsite.com',\n   'devEmail': 'kirpol76@gmail.com',\n   'devInn': '6154572922',\n   'devOgrn': '1116154005923',\n   'devKpp': '615401001',\n   'devLegalAddr': 'Ростовская область, город Таганрог, улица Свободы/Трудовых резервов дом 25/9',\n   'devFactAddr': 'обл Ростовская город Таганрог улица Сергея Шило д. 212-2',\n   'lastRpdId': 126093,\n   'fundGuarantyFlg': 0,\n   'devOrgRegRegionCd': 61,\n   'devEmplMainFullNm': 'Снимщикова Ольга Викторовна',\n   'orgForm': {'id': 20,\n    'fullForm': 'Жилищный или жилищно-строительный кооператив',\n    'shortForm': 'ЖСК'},\n   'objGuarantyEscrowFlg': 0,\n   'govFundFlg': 0},\n  'region': 61,\n  'address': 'г Таганрог',\n  'objElemLivingCnt': 18,\n  'objReady100PercDt': '2020-03-31',\n  'wallMaterialShortDesc': 'Другое',\n  'objLkFinishTypeDesc': 'Под ключ',\n  'objLkFreePlanDesc': 'Есть',\n  'objElemParkingCnt': 0,\n  'objSquareLiving': 1519.0,\n  'rpdNum': '61-000818',\n  'rpdPdfLink': 'https://xn--80az8a.xn--d1aqf.xn--p1ai/api/ext/file/092af1ad-2b49-4150-8a92-293031e2f79a',\n  'rpdIssueDttm': '20-03-2019 18:41',\n  'objLkLatitude': '47.2238',\n  'objLkLongitude': '38.8513',\n  'objCompensFundFlg': 0,\n  'objProblemFlg': 0,\n  'objLkClassDesc': 'Комфорт',\n  'loadDttm': '11-08-2022 01:23',\n  'photoRenderDTO': [],\n  'objGuarantyEscrowFlg': 0,\n  'objectType': 'normal',\n  'residentialBuildings': 1,\n  'newBuildingId': 40800,\n  'objFlatCnt': 18,\n  'objFlatSq': '1519.0',\n  'objNonlivElemCnt': 0,\n  'objStatus': 0,\n  'isAvailableWantLiveHere': True,\n  'objInfrstrBicycleLaneFlg': 0,\n  'objInfrstrRampFlg': 0,\n  'objInfrstrCurbLoweringFlg': 0,\n  'objectTransportInfo': [],\n  'conclusion': False,\n  'objGreenHouseFlg': 0,\n  'objEnergyEffShortDesc': 'Не нормируется',\n  'infrastructureIndexValue': 7},\n 'errcode': '0'}"
+          },
+          "execution_count": 20,
+          "metadata": {},
+          "output_type": "execute_result"
+        }
+      ],
+      "source": [
+        "res = requests.get(url)\n",
+        "res.json()"
+      ],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "id": "QDuBtXU9eVXe",
+        "outputId": "72ac0b6a-8fd5-4365-a40c-7ee6d56627b3"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "outputs": [],
+      "source": [],
+      "metadata": {
+        "pycharm": {
+          "name": "#%%\n"
+        },
+        "id": "uF3I4KbUeVXf"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Альтернативный источник данных\n"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "VnZyIOnDeVXf"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "* Попробуйте собрать датафрэйм об объектах недвижимости с сайта cian.ru, используя репозиторий https://github.com/lenarsaitov/cianparser.git"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "xaKI_QsTeVXf"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Collecting git+https://github.com/lenarsaitov/cianparser.git\n",
+            "  Cloning https://github.com/lenarsaitov/cianparser.git to /tmp/pip-req-build-z3kk9fpg\n",
+            "  Running command git clone --filter=blob:none --quiet https://github.com/lenarsaitov/cianparser.git /tmp/pip-req-build-z3kk9fpg\n",
+            "  Resolved https://github.com/lenarsaitov/cianparser.git to commit 236352a200b08b27c24d14b18939b4c34691cbb2\n",
+            "  Preparing metadata (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "Collecting cloudscraper (from cianparser==1.0.4)\n",
+            "  Downloading cloudscraper-1.2.71-py2.py3-none-any.whl (99 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m99.7/99.7 kB\u001b[0m \u001b[31m2.5 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hRequirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.10/dist-packages (from cianparser==1.0.4) (4.12.3)\n",
+            "Collecting transliterate (from cianparser==1.0.4)\n",
+            "  Downloading transliterate-1.10.2-py2.py3-none-any.whl (45 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m45.8/45.8 kB\u001b[0m \u001b[31m4.4 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hRequirement already satisfied: lxml in /usr/local/lib/python3.10/dist-packages (from cianparser==1.0.4) (4.9.4)\n",
+            "Collecting datetime (from cianparser==1.0.4)\n",
+            "  Downloading DateTime-5.5-py3-none-any.whl (52 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m52.6/52.6 kB\u001b[0m \u001b[31m6.8 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hRequirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.10/dist-packages (from beautifulsoup4->cianparser==1.0.4) (2.5)\n",
+            "Requirement already satisfied: pyparsing>=2.4.7 in /usr/local/lib/python3.10/dist-packages (from cloudscraper->cianparser==1.0.4) (3.1.2)\n",
+            "Requirement already satisfied: requests>=2.9.2 in /usr/local/lib/python3.10/dist-packages (from cloudscraper->cianparser==1.0.4) (2.31.0)\n",
+            "Collecting requests-toolbelt>=0.9.1 (from cloudscraper->cianparser==1.0.4)\n",
+            "  Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m54.5/54.5 kB\u001b[0m \u001b[31m7.5 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hCollecting zope.interface (from datetime->cianparser==1.0.4)\n",
+            "  Downloading zope.interface-6.4.post2-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (247 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m247.8/247.8 kB\u001b[0m \u001b[31m10.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hRequirement already satisfied: pytz in /usr/local/lib/python3.10/dist-packages (from datetime->cianparser==1.0.4) (2023.4)\n",
+            "Requirement already satisfied: six>=1.1.0 in /usr/local/lib/python3.10/dist-packages (from transliterate->cianparser==1.0.4) (1.16.0)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests>=2.9.2->cloudscraper->cianparser==1.0.4) (3.3.2)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests>=2.9.2->cloudscraper->cianparser==1.0.4) (3.7)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests>=2.9.2->cloudscraper->cianparser==1.0.4) (2.0.7)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests>=2.9.2->cloudscraper->cianparser==1.0.4) (2024.6.2)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from zope.interface->datetime->cianparser==1.0.4) (67.7.2)\n",
+            "Building wheels for collected packages: cianparser\n",
+            "  Building wheel for cianparser (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for cianparser: filename=cianparser-1.0.4-py3-none-any.whl size=32588 sha256=f76679110cadaba0ccfefa2cb2b4caa96eff9c220d90cb091c016db25f1c12f3\n",
+            "  Stored in directory: /tmp/pip-ephem-wheel-cache-s8q5e10d/wheels/64/64/3f/e86213cad6536b6d261071ce219f1770b4a3975bfb01cba713\n",
+            "Successfully built cianparser\n",
+            "Installing collected packages: zope.interface, transliterate, requests-toolbelt, datetime, cloudscraper, cianparser\n",
+            "Successfully installed cianparser-1.0.4 cloudscraper-1.2.71 datetime-5.5 requests-toolbelt-1.0.0 transliterate-1.10.2 zope.interface-6.4.post2\n"
+          ]
+        }
+      ],
+      "source": [
+        "! pip install git+https://github.com/lenarsaitov/cianparser.git"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ScIAhvzeeVXf",
+        "outputId": "feb34a9e-69ba-4e9b-a38b-e9a574ee1dfd"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "                              Preparing to collect information from pages..\n",
+            "The absolute path to the file: \n",
+            "/content/cian_flat_sale_1_20_moskva_02_Jul_2024_17_33_14_256982.csv \n",
+            "\n",
+            "The page from which the collection of information begins: \n",
+            " https://cian.ru/cat.php?engine_version=2&p=1&with_neighbors=0&region=1&deal_type=sale&offer_type=flat&room1=1&room2=1\n",
+            "\n",
+            "Collecting information from pages with list of offers\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "\n",
+            "The collection of information from the pages with list of offers is completed\n",
+            "Total number of parsed offers: 494. \n",
+            "{'author': 'Абсолют Недвижимость', 'author_type': 'developer', 'url': 'https://www.cian.ru/sale/flat/304065659/', 'location': 'Москва', 'deal_type': 'sale', 'accommodation_type': 'flat', 'floor': 4, 'floors_count': 17, 'rooms_count': 2, 'total_meters': 49.8, 'price': 53567000, 'district': 'Хамовники', 'street': '', 'house_number': '', 'underground': 'Воробьёвы горы', 'residential_complex': 'Коллекция Лужники ЖК'}\n"
+          ]
+        }
+      ],
+      "source": [
+        "import cianparser\n",
+        "\n",
+        "moscow_parser = cianparser.CianParser(location=\"Москва\")\n",
+        "data = moscow_parser.get_flats(deal_type=\"sale\", rooms=(1, 2), with_saving_csv=True, additional_settings={\"start_page\":1, \"end_page\":20})\n",
+        "\n",
+        "print(data[0])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "jI59tuAOeVXf",
+        "outputId": "9ce3c10f-0924-43fe-e946-1a8aa066794e"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "outputs": [],
+      "source": [
+        "import pandas as pd"
+      ],
+      "metadata": {
+        "id": "3f7NqNdPeVXf"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = pd.json_normalize(data)"
+      ],
+      "metadata": {
+        "id": "V_A2W0LyhXCw"
+      },
+      "execution_count": 7,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.head()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 313
+        },
+        "id": "DXMJFyGIhy4X",
+        "outputId": "5f138189-c003-4cb8-e5df-06fcf5fcd6c3"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "                 author        author_type  \\\n",
+              "0  Абсолют Недвижимость          developer   \n",
+              "1               SHOW ME  real_estate_agent   \n",
+              "2              Акрополь  real_estate_agent   \n",
+              "3                VESPER          developer   \n",
+              "4           ID 85604823            unknown   \n",
+              "\n",
+              "                                        url location deal_type  \\\n",
+              "0  https://www.cian.ru/sale/flat/304065659/   Москва      sale   \n",
+              "1  https://www.cian.ru/sale/flat/302081797/   Москва      sale   \n",
+              "2  https://www.cian.ru/sale/flat/300605973/   Москва      sale   \n",
+              "3  https://www.cian.ru/sale/flat/262519758/   Москва      sale   \n",
+              "4  https://www.cian.ru/sale/flat/299429352/   Москва      sale   \n",
+              "\n",
+              "  accommodation_type  floor  floors_count  rooms_count  total_meters  \\\n",
+              "0               flat      4            17            2          49.8   \n",
+              "1               flat      2            10            2          69.4   \n",
+              "2               flat     15            16            1          34.3   \n",
+              "3               flat      5            21            2         110.6   \n",
+              "4               flat     38            51            2          63.0   \n",
+              "\n",
+              "       price     district             street house_number      underground  \\\n",
+              "0   53567000    Хамовники                                   Воробьёвы горы   \n",
+              "1   85000000     Тверской             Палиха            4    Менделеевская   \n",
+              "2    9500000                Василия Ощепкова            2       Коммунарка   \n",
+              "3  103787040  Пресненский          Костикова          4к1  Улица 1905 года   \n",
+              "4   36000000  Пресненский  Шмитовский проезд         39к8         Шелепиха   \n",
+              "\n",
+              "        residential_complex  \n",
+              "0      Коллекция Лужники ЖК  \n",
+              "1  Клубный дом Maison Rouge  \n",
+              "2                 Москвичка  \n",
+              "3                     Lucky  \n",
+              "4                 Headliner  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-82338d0e-672d-44d1-98e8-c97f14d97f67\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>author</th>\n",
+              "      <th>author_type</th>\n",
+              "      <th>url</th>\n",
+              "      <th>location</th>\n",
+              "      <th>deal_type</th>\n",
+              "      <th>accommodation_type</th>\n",
+              "      <th>floor</th>\n",
+              "      <th>floors_count</th>\n",
+              "      <th>rooms_count</th>\n",
+              "      <th>total_meters</th>\n",
+              "      <th>price</th>\n",
+              "      <th>district</th>\n",
+              "      <th>street</th>\n",
+              "      <th>house_number</th>\n",
+              "      <th>underground</th>\n",
+              "      <th>residential_complex</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Абсолют Недвижимость</td>\n",
+              "      <td>developer</td>\n",
+              "      <td>https://www.cian.ru/sale/flat/304065659/</td>\n",
+              "      <td>Москва</td>\n",
+              "      <td>sale</td>\n",
+              "      <td>flat</td>\n",
+              "      <td>4</td>\n",
+              "      <td>17</td>\n",
+              "      <td>2</td>\n",
+              "      <td>49.8</td>\n",
+              "      <td>53567000</td>\n",
+              "      <td>Хамовники</td>\n",
+              "      <td></td>\n",
+              "      <td></td>\n",
+              "      <td>Воробьёвы горы</td>\n",
+              "      <td>Коллекция Лужники ЖК</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>SHOW ME</td>\n",
+              "      <td>real_estate_agent</td>\n",
+              "      <td>https://www.cian.ru/sale/flat/302081797/</td>\n",
+              "      <td>Москва</td>\n",
+              "      <td>sale</td>\n",
+              "      <td>flat</td>\n",
+              "      <td>2</td>\n",
+              "      <td>10</td>\n",
+              "      <td>2</td>\n",
+              "      <td>69.4</td>\n",
+              "      <td>85000000</td>\n",
+              "      <td>Тверской</td>\n",
+              "      <td>Палиха</td>\n",
+              "      <td>4</td>\n",
+              "      <td>Менделеевская</td>\n",
+              "      <td>Клубный дом Maison Rouge</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Акрополь</td>\n",
+              "      <td>real_estate_agent</td>\n",
+              "      <td>https://www.cian.ru/sale/flat/300605973/</td>\n",
+              "      <td>Москва</td>\n",
+              "      <td>sale</td>\n",
+              "      <td>flat</td>\n",
+              "      <td>15</td>\n",
+              "      <td>16</td>\n",
+              "      <td>1</td>\n",
+              "      <td>34.3</td>\n",
+              "      <td>9500000</td>\n",
+              "      <td></td>\n",
+              "      <td>Василия Ощепкова</td>\n",
+              "      <td>2</td>\n",
+              "      <td>Коммунарка</td>\n",
+              "      <td>Москвичка</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>VESPER</td>\n",
+              "      <td>developer</td>\n",
+              "      <td>https://www.cian.ru/sale/flat/262519758/</td>\n",
+              "      <td>Москва</td>\n",
+              "      <td>sale</td>\n",
+              "      <td>flat</td>\n",
+              "      <td>5</td>\n",
+              "      <td>21</td>\n",
+              "      <td>2</td>\n",
+              "      <td>110.6</td>\n",
+              "      <td>103787040</td>\n",
+              "      <td>Пресненский</td>\n",
+              "      <td>Костикова</td>\n",
+              "      <td>4к1</td>\n",
+              "      <td>Улица 1905 года</td>\n",
+              "      <td>Lucky</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>ID 85604823</td>\n",
+              "      <td>unknown</td>\n",
+              "      <td>https://www.cian.ru/sale/flat/299429352/</td>\n",
+              "      <td>Москва</td>\n",
+              "      <td>sale</td>\n",
+              "      <td>flat</td>\n",
+              "      <td>38</td>\n",
+              "      <td>51</td>\n",
+              "      <td>2</td>\n",
+              "      <td>63.0</td>\n",
+              "      <td>36000000</td>\n",
+              "      <td>Пресненский</td>\n",
+              "      <td>Шмитовский проезд</td>\n",
+              "      <td>39к8</td>\n",
+              "      <td>Шелепиха</td>\n",
+              "      <td>Headliner</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-82338d0e-672d-44d1-98e8-c97f14d97f67')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-82338d0e-672d-44d1-98e8-c97f14d97f67 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-82338d0e-672d-44d1-98e8-c97f14d97f67');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "<div id=\"df-2b8cafbd-8688-441a-9d89-d0d0231a9868\">\n",
+              "  <button class=\"colab-df-quickchart\" onclick=\"quickchart('df-2b8cafbd-8688-441a-9d89-d0d0231a9868')\"\n",
+              "            title=\"Suggest charts\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "     width=\"24px\">\n",
+              "    <g>\n",
+              "        <path d=\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z\"/>\n",
+              "    </g>\n",
+              "</svg>\n",
+              "  </button>\n",
+              "\n",
+              "<style>\n",
+              "  .colab-df-quickchart {\n",
+              "      --bg-color: #E8F0FE;\n",
+              "      --fill-color: #1967D2;\n",
+              "      --hover-bg-color: #E2EBFA;\n",
+              "      --hover-fill-color: #174EA6;\n",
+              "      --disabled-fill-color: #AAA;\n",
+              "      --disabled-bg-color: #DDD;\n",
+              "  }\n",
+              "\n",
+              "  [theme=dark] .colab-df-quickchart {\n",
+              "      --bg-color: #3B4455;\n",
+              "      --fill-color: #D2E3FC;\n",
+              "      --hover-bg-color: #434B5C;\n",
+              "      --hover-fill-color: #FFFFFF;\n",
+              "      --disabled-bg-color: #3B4455;\n",
+              "      --disabled-fill-color: #666;\n",
+              "  }\n",
+              "\n",
+              "  .colab-df-quickchart {\n",
+              "    background-color: var(--bg-color);\n",
+              "    border: none;\n",
+              "    border-radius: 50%;\n",
+              "    cursor: pointer;\n",
+              "    display: none;\n",
+              "    fill: var(--fill-color);\n",
+              "    height: 32px;\n",
+              "    padding: 0;\n",
+              "    width: 32px;\n",
+              "  }\n",
+              "\n",
+              "  .colab-df-quickchart:hover {\n",
+              "    background-color: var(--hover-bg-color);\n",
+              "    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "    fill: var(--button-hover-fill-color);\n",
+              "  }\n",
+              "\n",
+              "  .colab-df-quickchart-complete:disabled,\n",
+              "  .colab-df-quickchart-complete:disabled:hover {\n",
+              "    background-color: var(--disabled-bg-color);\n",
+              "    fill: var(--disabled-fill-color);\n",
+              "    box-shadow: none;\n",
+              "  }\n",
+              "\n",
+              "  .colab-df-spinner {\n",
+              "    border: 2px solid var(--fill-color);\n",
+              "    border-color: transparent;\n",
+              "    border-bottom-color: var(--fill-color);\n",
+              "    animation:\n",
+              "      spin 1s steps(1) infinite;\n",
+              "  }\n",
+              "\n",
+              "  @keyframes spin {\n",
+              "    0% {\n",
+              "      border-color: transparent;\n",
+              "      border-bottom-color: var(--fill-color);\n",
+              "      border-left-color: var(--fill-color);\n",
+              "    }\n",
+              "    20% {\n",
+              "      border-color: transparent;\n",
+              "      border-left-color: var(--fill-color);\n",
+              "      border-top-color: var(--fill-color);\n",
+              "    }\n",
+              "    30% {\n",
+              "      border-color: transparent;\n",
+              "      border-left-color: var(--fill-color);\n",
+              "      border-top-color: var(--fill-color);\n",
+              "      border-right-color: var(--fill-color);\n",
+              "    }\n",
+              "    40% {\n",
+              "      border-color: transparent;\n",
+              "      border-right-color: var(--fill-color);\n",
+              "      border-top-color: var(--fill-color);\n",
+              "    }\n",
+              "    60% {\n",
+              "      border-color: transparent;\n",
+              "      border-right-color: var(--fill-color);\n",
+              "    }\n",
+              "    80% {\n",
+              "      border-color: transparent;\n",
+              "      border-right-color: var(--fill-color);\n",
+              "      border-bottom-color: var(--fill-color);\n",
+              "    }\n",
+              "    90% {\n",
+              "      border-color: transparent;\n",
+              "      border-bottom-color: var(--fill-color);\n",
+              "    }\n",
+              "  }\n",
+              "</style>\n",
+              "\n",
+              "  <script>\n",
+              "    async function quickchart(key) {\n",
+              "      const quickchartButtonEl =\n",
+              "        document.querySelector('#' + key + ' button');\n",
+              "      quickchartButtonEl.disabled = true;  // To prevent multiple clicks.\n",
+              "      quickchartButtonEl.classList.add('colab-df-spinner');\n",
+              "      try {\n",
+              "        const charts = await google.colab.kernel.invokeFunction(\n",
+              "            'suggestCharts', [key], {});\n",
+              "      } catch (error) {\n",
+              "        console.error('Error during call to suggestCharts:', error);\n",
+              "      }\n",
+              "      quickchartButtonEl.classList.remove('colab-df-spinner');\n",
+              "      quickchartButtonEl.classList.add('colab-df-quickchart-complete');\n",
+              "    }\n",
+              "    (() => {\n",
+              "      let quickchartButtonEl =\n",
+              "        document.querySelector('#df-2b8cafbd-8688-441a-9d89-d0d0231a9868 button');\n",
+              "      quickchartButtonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "    })();\n",
+              "  </script>\n",
+              "</div>\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "df",
+              "summary": "{\n  \"name\": \"df\",\n  \"rows\": 494,\n  \"fields\": [\n    {\n      \"column\": \"author\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 174,\n        \"samples\": [\n          \"\\u0414\\u041e\\u041d\\u0421\\u0422\\u0420\\u041e\\u0419\",\n          \"VOS HOD\",\n          \"ID 12530791\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"author_type\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 8,\n        \"samples\": [\n          \"real_estate_agent\",\n          \"homeowner\",\n          \"developer\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"url\",\n      \"properties\": {\n        \"dtype\": \"string\",\n        \"num_unique_values\": 494,\n        \"samples\": [\n          \"https://www.cian.ru/sale/flat/299008778/\",\n          \"https://www.cian.ru/sale/flat/299890518/\",\n          \"https://www.cian.ru/sale/flat/301449141/\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"location\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 1,\n        \"samples\": [\n          \"\\u041c\\u043e\\u0441\\u043a\\u0432\\u0430\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"deal_type\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 1,\n        \"samples\": [\n          \"sale\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"accommodation_type\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 1,\n        \"samples\": [\n          \"flat\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"floor\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 11,\n        \"min\": 1,\n        \"max\": 63,\n        \"num_unique_values\": 45,\n        \"samples\": [\n          58\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"floors_count\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 16,\n        \"min\": 2,\n        \"max\": 85,\n        \"num_unique_values\": 65,\n        \"samples\": [\n          57\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"rooms_count\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0,\n        \"min\": 1,\n        \"max\": 2,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"total_meters\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 25.795999385723572,\n        \"min\": 15.1,\n        \"max\": 298.3,\n        \"num_unique_values\": 333,\n        \"samples\": [\n          46.3\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"price\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 43958913,\n        \"min\": 5790000,\n        \"max\": 448200000,\n        \"num_unique_values\": 418,\n        \"samples\": [\n          24400000\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"district\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 83,\n        \"samples\": [\n          \"\\u0413\\u043e\\u043b\\u043e\\u0432\\u0438\\u043d\\u0441\\u043a\\u0438\\u0439\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"street\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 231,\n        \"samples\": [\n          \"\\u0422\\u0435\\u0441\\u0441\\u0438\\u043d\\u0441\\u043a\\u0438\\u0439 \\u043f\\u0435\\u0440\\u0435\\u0443\\u043b\\u043e\\u043a\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"house_number\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 230,\n        \"samples\": [\n          \"29\\u04211\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"underground\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 165,\n        \"samples\": [\n          \"\\u041d\\u043e\\u0432\\u044b\\u0435 \\u0427\\u0435\\u0440\\u0451\\u043c\\u0443\\u0448\\u043a\\u0438\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"residential_complex\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 209,\n        \"samples\": [\n          \"\\u0422\\u0440\\u043e\\u043f\\u0430\\u0440\\u0435\\u0432\\u043e \\u041f\\u0430\\u0440\\u043a\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.shape"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Qq7r8-kMh8fn",
+        "outputId": "8d8a1cd4-b2b9-40ae-aea5-ebb0799900cb"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(494, 16)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install openpyxl"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XEyZE-BziBrC",
+        "outputId": "866cb2f9-6c85-41a6-fcc5-3d35da548ae2"
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: openpyxl in /usr/local/lib/python3.10/dist-packages (3.1.5)\n",
+            "Requirement already satisfied: et-xmlfile in /usr/local/lib/python3.10/dist-packages (from openpyxl) (1.1.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Сохраняем в csv файл\n",
+        "df.to_csv('data.csv', index=False)\n",
+        "# Сохраняем в эксель-файл\n",
+        "df.to_excel('data.xlsx', index=False)\n",
+        "# Сохраняем в файл в формате pickle\n",
+        "df.to_pickle('data.pkl')"
+      ],
+      "metadata": {
+        "id": "z6YcIekfiK3b"
+      },
+      "execution_count": 11,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sudo apt install git"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 106
+        },
+        "id": "FZGfEboZuCY5",
+        "outputId": "64938aac-687c-4e4e-8ac4-4a1db2ff4a68"
+      },
+      "execution_count": 19,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "SyntaxError",
+          "evalue": "invalid syntax (<ipython-input-19-f9341efabed1>, line 1)",
+          "traceback": [
+            "\u001b[0;36m  File \u001b[0;32m\"<ipython-input-19-f9341efabed1>\"\u001b[0;36m, line \u001b[0;32m1\u001b[0m\n\u001b[0;31m    sudo apt install git\u001b[0m\n\u001b[0m         ^\u001b[0m\n\u001b[0;31mSyntaxError\u001b[0m\u001b[0;31m:\u001b[0m invalid syntax\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 2
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython2",
+      "version": "2.7.6"
+    },
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
